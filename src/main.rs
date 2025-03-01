@@ -14,11 +14,12 @@ struct Args {
     output: String,
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
     let args = Args::parse();
-    process_image(&args.input, &args.output)?;
-    println!("Edge detection complete! Saved to {}", &args.output);
-    Ok(())
+    match process_image(&args.input, &args.output) {
+        Ok(_) => println!("Edge detection complete! Saved to {}", &args.output),
+        Err(error) => println!("Error: {}", error),
+    }
 }
 
 fn process_image(input_path: &str, output_path: &str) -> Result<(), Box<dyn Error>> {
