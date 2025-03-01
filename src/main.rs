@@ -1,6 +1,7 @@
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use image::{GrayImage, ImageBuffer, Luma};
 use imageproc::gradients::sobel_gradients;
+use imageproc::edges::canny;
 use std::error::Error;
 
 /// CLI Arguments for the Edge Detection tool
@@ -12,21 +13,40 @@ struct Args {
 
     /// Path to save the output image
     output: String,
+
+    /// Edge detection method: Sobel or Canny
+    #[arg(short, long, value_enum, default_value = "sobel")]
+    method: EdgeDetectionMethod,
+}
+
+/// Edge detection methods
+#[derive(Debug, Clone, ValueEnum)]
+enum EdgeDetectionMethod {
+    Sobel,
+    Canny,
 }
 
 fn main() {
     let args = Args::parse();
-    match process_image(&args.input, &args.output) {
-        Ok(_) => println!("Edge detection complete! Saved to {}", &args.output),
+    println!("method: {:?}", args.method);
+    match process_image(&args.input, &args.output, args.method) {
+        Ok(_) => println!("Edge detection complete!!! Saved to {}", &args.output),
         Err(error) => println!("Error: {}", error),
     }
 }
 
-fn process_image(input_path: &str, output_path: &str) -> Result<(), Box<dyn Error>> {
+fn process_image(input_path: &str, output_path: &str, method: EdgeDetectionMethod) -> Result<(), Box<dyn Error>> {
     let img = image::open(input_path)?;
     let gray_img = img.to_luma8();
-    let edge_img_u16 = sobel_gradients(&gray_img);
-    let edge_img_u8 = normalize_u16_to_u8(&edge_img_u16);
+
+    let edge_img_u8 = match method {
+        EdgeDetectionMethod::Sobel => {
+            let edge_img_u16 = sobel_gradients(&gray_img);
+            normalize_u16_to_u8(&edge_img_u16)
+        }
+        EdgeDetectionMethod::Canny => canny(&gray_img, 50.0, 100.0),
+    };
+
     edge_img_u8.save(output_path)?;
     Ok(())
 }

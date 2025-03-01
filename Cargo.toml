@@ -1,5 +1,5 @@
 [package]
-name = "sobel_edge_detector"
+name = "edge_detector"
 version = "0.1.0"
 edition = "2021"
 

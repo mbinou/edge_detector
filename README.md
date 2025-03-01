@@ -1,1 +1,1 @@
-# sobel_edge_detector
+# edge_detector
