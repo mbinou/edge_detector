@@ -1,30 +1,23 @@
-use clap::{Arg, Command};
+use clap::Parser;
 use image::{GrayImage, Luma};
 use imageproc::gradients::sobel_gradients;
 
-fn main() {
-    let matches = Command::new("Edge Detection CLI")
-        .version("1.0")
-        .about("Applies edge detection to an image")
-        .arg(
-            Arg::new("input")
-                .help("Path to the input image")
-                .required(true)
-                .index(1),
-        )
-        .arg(
-            Arg::new("output")
-                .help("Path to save the output image")
-                .required(true)
-                .index(2),
-        )
-        .get_matches();
+/// CLI Arguments for the Edge Detection tool
+#[derive(Parser, Debug)]
+#[command(version = "1.0", about = "Applies edge detection to an image")]
+struct Args {
+    /// Path to the input image
+    input: String,
 
-    let input_path = matches.get_one::<String>("input").unwrap();
-    let output_path = matches.get_one::<String>("output").unwrap();
+    /// Path to save the output image
+    output: String,
+}
+
+fn main() {
+    let args = Args::parse();
 
     // 画像をロード
-    let img: image::DynamicImage = image::open(input_path).expect("Failed to open image");
+    let img: image::DynamicImage = image::open(&args.input).expect("Failed to open image");
 
     // グレースケール変換
     let gray_img: GrayImage = img.to_luma8();
@@ -56,8 +49,8 @@ fn main() {
 
     // 画像を保存
     edge_img_u8
-        .save(output_path)
+        .save(&args.output)
         .expect("Failed to save processed image");
 
-    println!("Edge detection completed. Saved to {}", output_path);
+    println!("Edge detection completed. Saved to {}", &args.output);
 }
